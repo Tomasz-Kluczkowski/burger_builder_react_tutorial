@@ -39,14 +39,42 @@ class BurgerBuilder extends Component {
     };
 
     removeIngredientHandler = (type) => {
+        const oldCount = this.state.ingredients[type];
+        if (oldCount <= 0) {
+            return;
+        }
+        const updatedCount = oldCount - 1;
+        // Here we are copying and spreading the existing ingredients in the state to avoid accessing it directly
+        // Always operate in an immutable way !!!
+        const updatedIngredients = {
+            ...this.state.ingredients
+        };
+        updatedIngredients[type] = updatedCount;
+        const priceDeduction = INGREDIENT_PRICES[type];
+        const oldPrice = this.state.totalPrice;
+        const newPrice = oldPrice - priceDeduction;
+        this.setState({totalPrice: newPrice, ingredients: updatedIngredients});
 
     };
 
     render () {
+        // copy the state safely
+        const disabledInfo = {
+            ...this.state.ingredients
+        };
+        // loop through ingredients, replace values for keys with true (disabled button) if <= 0 or false if > 0
+        // (enabled button). This will be used for setting buttons to disabled.
+        for (let key in disabledInfo) {
+            disabledInfo[key] = disabledInfo[key] <= 0
+        }
         return (
             <Aux>
                 <Burger ingredients={this.state.ingredients}/>
-                <BuildControls ingredientAdded={this.addIngredientHandler}/>
+                <BuildControls
+                    ingredientAdded={this.addIngredientHandler}
+                    ingredientRemoved={this.removeIngredientHandler}
+                    disabled={disabledInfo}
+                />
             </Aux>
         );
     }
