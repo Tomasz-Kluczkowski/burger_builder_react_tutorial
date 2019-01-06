@@ -1,27 +1,38 @@
-import React, { Component } from 'react'
+import React, {Component} from 'react'
 
 import Aux from '../../hoc/Aux'
 import Burger from '../../components/Burger/Burger'
 import BuildControls from '../../components/Burger/BuildControls/BuildControls'
 
 const INGREDIENT_PRICES = {
-  salad: 0.5,
-  cheese: 0.4,
-  meat: 1.3,
-  bacon: 0.7
+    salad: 0.5,
+    cheese: 0.4,
+    meat: 1.3,
+    bacon: 0.7
 };
 
 
 class BurgerBuilder extends Component {
     state = {
-      ingredients: {
-          salad: 0,
-          bacon: 0,
-          cheese: 0,
-          meat: 0,
-      },
-      totalPrice: 4
+        ingredients: {
+            salad: 0,
+            bacon: 0,
+            cheese: 0,
+            meat: 0,
+        },
+        totalPrice: 4,
+        purchasable: false,
     };
+
+    updatePurchaseState (ingredients) {
+        // iterate over ingredients keys, create array of values from keys, reduce them to number of ingredients (sum)
+        const sum = Object.keys(ingredients).map(igKey => {
+            return ingredients[igKey]}).reduce((sum, el) => {
+                return sum + el;
+            }, 0);
+        // set purchasable to true if sum > 0
+        this.setState({purchasable: sum > 0})
+}
 
     addIngredientHandler = (type) => {
         const oldCount = this.state.ingredients[type];
@@ -36,6 +47,7 @@ class BurgerBuilder extends Component {
         const oldPrice = this.state.totalPrice;
         const newPrice = oldPrice + priceAddition;
         this.setState({totalPrice: newPrice, ingredients: updatedIngredients});
+        this.updatePurchaseState(updatedIngredients)
     };
 
     removeIngredientHandler = (type) => {
@@ -54,10 +66,10 @@ class BurgerBuilder extends Component {
         const oldPrice = this.state.totalPrice;
         const newPrice = oldPrice - priceDeduction;
         this.setState({totalPrice: newPrice, ingredients: updatedIngredients});
-
+        this.updatePurchaseState(updatedIngredients)
     };
 
-    render () {
+    render() {
         // copy the state safely
         const disabledInfo = {
             ...this.state.ingredients
@@ -75,6 +87,7 @@ class BurgerBuilder extends Component {
                     ingredientRemoved={this.removeIngredientHandler}
                     disabled={disabledInfo}
                     price={this.state.totalPrice}
+                    purchasable={this.state.purchasable}
                 />
             </Aux>
         );
